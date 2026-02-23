@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Planner Semanal · Cursinho 2026</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #f2f7ff;
+            min-height: 100vh;
+            padding: 1.5rem 1rem;
+            display: flex;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        body.dark-mode {
+            background: #0a1424;
+            color: #e0e9f5;
+        }
+
+        .app {
+            max-width: 1600px;
+            width: 100%;
+        }
+
+        /* Painel Admin */
+        .admin-bar {
+            background: white;
+            border-radius: 60px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px -12px rgba(0, 45, 85, 0.15);
+            border: 1px solid rgba(70, 130, 200, 0.2);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .dark-mode .admin-bar {
+            background: #1e2a3a;
+            border-color: #3a4a60;
+        }
+
+        .admin-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .admin-icon {
+            background: #1a3f66;
+            color: white;
+            width: 42px;
+            height: 42px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .admin-title {
+            font-weight: 600;
+            color: #113355;
+            font-size: 1.1rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-download, .btn-darkmode, .btn-save-planner, .btn-reset {
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-download {
+            background: #1d4d7c;
+            color: white;
+        }
+
+        .btn-darkmode {
+            background: #334e77;
+            color: white;
+        }
+
+        .btn-save-planner {
+            background: #4f7b3a;
+            color: white;
+        }
+
+        .btn-reset {
+            background: #c94f4f;
+            color: white;
+        }
+
+        .btn-download:hover, .btn-darkmode:hover, .btn-save-planner:hover, .btn-reset:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .dark-mode .btn-darkmode {
+            background: #f0c45a;
+            color: #1a2635;
+        }
+
+        /* Planner card */
+        .planner-card {
+            background: white;
+            border-radius: 40px;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 30px 50px -20px rgba(8, 35, 70, 0.2);
+            border: 1px solid #d0e2fd;
+            overflow-x: auto;
+        }
+
+        .dark-mode .planner-card {
+            background: #1b2537;
+            border-color: #33415c;
+        }
+
+        .planner-header {
+            margin-bottom: 2rem;
+        }
+
+        .planner-header h1 {
+            font-size: 2rem;
+            font-weight: 500;
+            color: #0a2d4e;
+            border-left: 6px solid #4f8bc9;
+            padding-left: 1.5rem;
+        }
+
+        .dark-mode .planner-header h1 {
+            color: #c7dcff;
+            border-left-color: #7aa9e0;
+        }
+
+        /* Tabela com colunas independentes */
+        .planner-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,20,50,0.05);
+        }
+
+        .dark-mode .planner-table {
+            background: #202b3f;
+        }
+
+        .planner-table th {
+            background: #e1efff;
+            color: #133b61;
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 1.2rem 0.5rem;
+            text-align: center;
+            border: 1px solid #c5d9f5;
+            text-transform: uppercase;
+        }
+
+        .dark-mode .planner-table th {
+            background: #2a3853;
+            color: #c7dcff;
+            border-color: #3f506f;
+        }
+
+        .planner-table td {
+            border: 1px solid #d7e6ff;
+            padding: 0;
+            vertical-align: top;
+            background: white;
+            height: 70px;
+        }
+
+        .dark-mode .planner-table td {
+            background: #202b3f;
+            border-color: #364153;
+        }
+
+        /* Cada dia tem sua própria coluna de horários */
+        .day-column {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+
+        .time-slot {
+            display: flex;
+            border-bottom: 1px solid #d7e6ff;
+            min-height: 70px;
+        }
+
+        .time-slot:last-child {
+            border-bottom: none;
+        }
+
+        .time-col {
+            width: 70px;
+            background: #f2f8ff;
+            color: #144d7a;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid #b7d2f2;
+            cursor: pointer;
+        }
+
+        .dark-mode .time-col {
+            background: #252f45;
+            color: #b8d6ff;
+            border-right-color: #4a5a7a;
+        }
+
+        .content-col {
+            flex: 1;
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background: white;
+        }
+
+        .dark-mode .content-col {
+            background: #202b3f;
+        }
+
+        .content-col:hover {
+            background: #f5fbff;
+        }
+
+        .dark-mode .content-col:hover {
+            background: #2a3650;
+        }
+
+        /* Estilos de conteúdo */
+        .obrigatoria {
+            color: #1d2b5c;
+            font-weight: 700;
+            background: #f0ebff;
+            border-radius: 12px;
+            padding: 6px 10px;
+            width: 100%;
+            border-left: 4px solid #422c8c;
+            font-size: 0.8rem;
+        }
+
+        .opcional {
+            color: #8a5c1a;
+            font-weight: 600;
+            background: #fff4e0;
+            border-radius: 12px;
+            padding: 6px 10px;
+            width: 100%;
+            border-left: 4px solid #c07c2c;
+            font-size: 0.8rem;
+        }
+
+        .opcional::after {
+            content: " (opcional)";
+            font-weight: 400;
+            font-size: 0.7rem;
+            color: #b0782e;
+        }
+
+        .lunch {
+            background: #c5e4ff;
+            color: #075a78;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 6px 10px;
+            width: 100%;
+            border-left: 4px solid #1282a1;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .superexatas {
+            color: #5d1870;
+            font-weight: 800;
+            background: #f7e0ff;
+            border-radius: 12px;
+            padding: 6px 10px;
+            width: 100%;
+            border-left: 4px solid #a04bc0;
+            font-size: 0.8rem;
+        }
+
+        .superexatas::before {
+            content: "⚡ ";
+        }
+
+        .btn-add-time {
+            background: #ecf5ff;
+            border: 2px dashed #91b9f0;
+            border-radius: 30px;
+            color: #1d4d7c;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .btn-add-time:hover {
+            background: #d1e4ff;
+        }
+
+        .btn-delete-slot {
+            background: #c94f4f;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 30, 50, 0.3);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 48px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 40px 70px -20px #0b233a;
+            border: 1px solid #c7ddfc;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .dark-mode .modal-content {
+            background: #1b2537;
+            border-color: #3a4b6a;
+        }
+
+        .modal-content h2 {
+            font-size: 1.8rem;
+            font-weight: 350;
+            color: #10355e;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #346392;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 0.3rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border-radius: 100px;
+            border: 1px solid #bdd3f5;
+            font-size: 0.95rem;
+            background: #f9fcff;
+        }
+
+        .dark-mode .form-group input {
+            background: #2a3650;
+            border-color: #4e6188;
+            color: white;
+        }
+
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background: #ecf5ff;
+            padding: 0.8rem;
+            border-radius: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .type-radio {
+            display: none;
+        }
+
+        .type-label {
+            display: block;
+            text-align: center;
+            padding: 0.7rem 0.3rem;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid #b4cef0;
+            color: #1f4880;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .type-radio:checked + .type-label {
+            background: #1f4880;
+            color: white;
+        }
+
+        .type-radio[value="superexatas"]:checked + .type-label {
+            background: #943eb3;
+        }
+
+        .materias-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            border: 1px solid #d7e6ff;
+            border-radius: 20px;
+        }
+
+        .materia-btn {
+            background: #f0f7ff;
+            border: 1px solid #c5d9f5;
+            border-radius: 40px;
+            padding: 0.6rem 0.3rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-align: center;
+            color: #1a3f66;
+        }
+
+        .materia-btn:hover {
+            background: #d1e4ff;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 2rem;
+        }
+
+        .btn-save, .btn-cancel {
+            flex: 1;
+            padding: 0.9rem;
+            border-radius: 60px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            background: #1d4985;
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #e9f2ff;
+            color: #1d4985;
+        }
+
+        /* Toast de notificação */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1d4985;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 1200px) {
+            .planner-table {
+                font-size: 0.8rem;
+            }
+        }
+
+        @media print {
+            .admin-bar, .modal, .btn-add-time {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="admin-bar">
+            <div class="admin-section">
+                <div class="admin-icon">⚡</div>
+                <span class="admin-title">Painel de Controle</span>
+            </div>
+            <div class="btn-group">
+                <button class="btn-save-planner" onclick="saveToLocalStorage()">
+                    <span>💾</span> Salvar
+                </button>
+                <button class="btn-reset" onclick="confirmReset()">
+                    <span>↺</span> Resetar
+                </button>
+                <button class="btn-darkmode" onclick="toggleDarkMode()">
+                    <span>🌓</span> Modo Escuro
+                </button>
+                <button class="btn-download" onclick="downloadPlanner()">
+                    <span>📥</span> Imprimir
+                </button>
+            </div>
+        </div>
+
+        <div class="planner-card">
+            <div class="planner-header">
+                <h1>PLANNER SEMANAL · CURSINHO 2026</h1>
+            </div>
+
+            <table class="planner-table">
+                <thead>
+                    <tr>
+                        <th>SEGUNDA-FEIRA</th>
+                        <th>TERÇA-FEIRA</th>
+                        <th>QUARTA-FEIRA</th>
+                        <th>QUINTA-FEIRA</th>
+                        <th>SEXTA-FEIRA</th>
+                        <th>SÁBADO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="6" style="padding: 0;">
+                            <div style="display: grid; grid-template-columns: repeat(6, 1fr);">
+                                <!-- Coluna Segunda -->
+                                <div class="day-column" id="col-segunda">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 0)">06:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 1)">07:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 2)">08:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 3)">09:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 4)">10:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 5)">11:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 6)">12:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 7)">13:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 8)">14:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 9)">15:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 10)">16:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 11)">17:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 12)">18:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 13)">19:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 14)">20:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('segunda', 15)">21:00</div>
+                                        <div class="content-col" onclick="editContent('segunda', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('segunda')">+ Adicionar horário</button>
+                                </div>
+
+                                <!-- Coluna Terça -->
+                                <div class="day-column" id="col-terca">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 0)">06:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 1)">07:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 2)">08:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 3)">09:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 4)">10:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 5)">11:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 6)">12:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 7)">13:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 8)">14:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 9)">15:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 10)">16:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 11)">17:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 12)">18:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 13)">19:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 14)">20:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('terca', 15)">21:00</div>
+                                        <div class="content-col" onclick="editContent('terca', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('terca')">+ Adicionar horário</button>
+                                </div>
+
+                                <!-- Coluna Quarta -->
+                                <div class="day-column" id="col-quarta">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 0)">06:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 1)">07:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 2)">08:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 3)">09:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 4)">10:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 5)">11:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 6)">12:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 7)">13:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 8)">14:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 9)">15:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 10)">16:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 11)">17:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 12)">18:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 13)">19:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 14)">20:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quarta', 15)">21:00</div>
+                                        <div class="content-col" onclick="editContent('quarta', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('quarta')">+ Adicionar horário</button>
+                                </div>
+
+                                <!-- Coluna Quinta -->
+                                <div class="day-column" id="col-quinta">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 0)">06:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 1)">07:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 2)">08:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 3)">09:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 4)">10:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 5)">11:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 6)">12:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 7)">13:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 8)">14:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 9)">15:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 10)">16:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 11)">17:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 12)">18:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 13)">19:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 14)">20:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('quinta', 15)">21:00</div>
+                                        <div class="content-col" onclick="editContent('quinta', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('quinta')">+ Adicionar horário</button>
+                                </div>
+
+                                <!-- Coluna Sexta -->
+                                <div class="day-column" id="col-sexta">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 0)">09:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 1)">09:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 2)">09:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 3)">10:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 4)">11:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 5)">12:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 6)">13:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 7)">14:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 8)">15:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 9)">16:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 10)">17:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 11)">18:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 12)">19:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 13)">20:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 14)">21:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sexta', 15)">22:00</div>
+                                        <div class="content-col" onclick="editContent('sexta', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('sexta')">+ Adicionar horário</button>
+                                </div>
+
+                                <!-- Coluna Sábado -->
+                                <div class="day-column" id="col-sabado">
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 0)">06:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 0)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 1)">07:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 1)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 2)">08:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 2)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 3)">09:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 3)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 4)">10:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 4)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 5)">11:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 5)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 6)">12:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 6)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 7)">13:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 7)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 8)">14:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 8)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 9)">15:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 9)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 10)">16:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 10)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 11)">17:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 11)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 12)">18:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 12)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 13)">19:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 13)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 14)">20:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 14)"></div>
+                                    </div>
+                                    <div class="time-slot">
+                                        <div class="time-col" onclick="editTime('sabado', 15)">21:00</div>
+                                        <div class="content-col" onclick="editContent('sabado', 15)"></div>
+                                    </div>
+                                    <button class="btn-add-time" onclick="addTimeSlot('sabado')">+ Adicionar horário</button>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal de edição -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">editar</h2>
+            
+            <div class="form-group">
+                <label>horário</label>
+                <input type="text" id="editTime" placeholder="Ex: 08:00">
+                <select id="timeSelect" style="margin-top: 8px; width: 100%;" onchange="document.getElementById('editTime').value = this.value">
+                    <option value="">-- escolher --</option>
+                    <option value="06:00">06:00</option>
+                    <option value="07:00">07:00</option>
+                    <option value="08:00">08:00</option>
+                    <option value="09:00">09:00</option>
+                    <option value="10:00">10:00</option>
+                    <option value="11:00">11:00</option>
+                    <option value="12:00">12:00</option>
+                    <option value="13:00">13:00</option>
+                    <option value="14:00">14:00</option>
+                    <option value="15:00">15:00</option>
+                    <option value="16:00">16:00</option>
+                    <option value="17:00">17:00</option>
+                    <option value="18:00">18:00</option>
+                    <option value="19:00">19:00</option>
+                    <option value="20:00">20:00</option>
+                    <option value="21:00">21:00</option>
+                    <option value="22:00">22:00</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>tipo</label>
+                <div class="type-grid">
+                    <input type="radio" name="tipo" id="tipoObrig" value="obrigatoria" class="type-radio" checked>
+                    <label for="tipoObrig" class="type-label">OBRIGATÓRIA</label>
+
+                    <input type="radio" name="tipo" id="tipoOpc" value="opcional" class="type-radio">
+                    <label for="tipoOpc" class="type-label">OPCIONAL</label>
+
+                    <input type="radio" name="tipo" id="tipoLunch" value="lunch" class="type-radio">
+                    <label for="tipoLunch" class="type-label">ALMOÇO</label>
+
+                    <input type="radio" name="tipo" id="tipoSuper" value="superexatas" class="type-radio">
+                    <label for="tipoSuper" class="type-label">SUPER EXATAS</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>matéria</label>
+                <div class="materias-grid" id="materiasGrid"></div>
+            </div>
+
+            <div class="form-group">
+                <label>ou digite</label>
+                <input type="text" id="editContent" placeholder="Digite o conteúdo">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-save" onclick="saveEdit()">salvar</button>
+                <button class="btn-cancel" onclick="closeModal()">cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lista de matérias
+        const materiasList = [
+            'Teoria - Física', 'Teoria - Matemática', 'Teoria - Química',
+            'Teoria - Biologia', 'Teoria - História', 'Teoria - Geografia',
+            'Teoria - Filosofia/Sociologia', 'Teoria - Gramática',
+            'Questões - Física', 'Questões - Matemática', 'Questões - Química',
+            'Questões - Biologia', 'Questões - História', 'Questões - Geografia',
+            'Questões - Filosofia/Sociologia', 'Questões - Gramática',
+            'Redação', 'Plantão Física', 'Plantão Matemática', 'Plantão Biologia',
+            'AULA OBRIGATÓRIA - FÍSICA', 'AULA OBRIGATÓRIA - QUÍMICA',
+            'AULA OBRIGATÓRIA - MATEMÁTICA', 'Revisão Geral'
+        ];
+
+        // Estado para controle de edição
+        let currentDay = '';
+        let currentIndex = 0;
+        let isEditingTime = false;
+
+        // Dados do planner (cada dia com seus horários e conteúdos)
+        let plannerData = {
+            segunda: Array(16).fill(''),
+            terca: Array(16).fill(''),
+            quarta: Array(16).fill(''),
+            quinta: Array(16).fill(''),
+            sexta: Array(16).fill(''),
+            sabado: Array(16).fill('')
+        };
+
+        // Tipos para cada célula
+        let typeData = {
+            segunda: Array(16).fill('obrigatoria'),
+            terca: Array(16).fill('obrigatoria'),
+            quarta: Array(16).fill('obrigatoria'),
+            quinta: Array(16).fill('obrigatoria'),
+            sexta: Array(16).fill('obrigatoria'),
+            sabado: Array(16).fill('obrigatoria')
+        };
+
+        // Carregar dados salvos ao iniciar
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('plannerData');
+            const savedTypes = localStorage.getItem('typeData');
+            
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    plannerData = parsed;
+                } catch (e) {
+                    console.error('Erro ao carregar dados salvos');
+                }
+            }
+            
+            if (savedTypes) {
+                try {
+                    const parsed = JSON.parse(savedTypes);
+                    typeData = parsed;
+                } catch (e) {
+                    console.error('Erro ao carregar tipos salvos');
+                }
+            }
+            
+            // Atualizar display
+            const days = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+            days.forEach(day => {
+                for (let i = 0; i < plannerData[day].length; i++) {
+                    updateCellDisplay(day, i);
+                }
+            });
+        }
+
+        // Salvar dados no localStorage
+        function saveToLocalStorage() {
+            localStorage.setItem('plannerData', JSON.stringify(plannerData));
+            localStorage.setItem('typeData', JSON.stringify(typeData));
+            
+            // Mostrar notificação
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = '✓ Planner salvo com sucesso!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Resetar para dados iniciais
+        function resetToDefault() {
+            plannerData = {
+                segunda: Array(16).fill(''),
+                terca: Array(16).fill(''),
+                quarta: Array(16).fill(''),
+                quinta: Array(16).fill(''),
+                sexta: Array(16).fill(''),
+                sabado: Array(16).fill('')
+            };
+            
+            typeData = {
+                segunda: Array(16).fill('obrigatoria'),
+                terca: Array(16).fill('obrigatoria'),
+                quarta: Array(16).fill('obrigatoria'),
+                quinta: Array(16).fill('obrigatoria'),
+                sexta: Array(16).fill('obrigatoria'),
+                sabado: Array(16).fill('obrigatoria')
+            };
+            
+            // Limpar localStorage
+            localStorage.removeItem('plannerData');
+            localStorage.removeItem('typeData');
+            
+            // Atualizar display
+            const days = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+            days.forEach(day => {
+                for (let i = 0; i < plannerData[day].length; i++) {
+                    updateCellDisplay(day, i);
+                }
+            });
+            
+            // Mostrar notificação
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = '✓ Planner resetado!';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Confirmar reset
+        function confirmReset() {
+            if (confirm('Tem certeza que deseja resetar todo o planner? Essa ação não pode ser desfeita.')) {
+                resetToDefault();
+            }
+        }
+
+        function renderMateriasGrid() {
+            const grid = document.getElementById('materiasGrid');
+            materiasList.forEach(materia => {
+                const btn = document.createElement('div');
+                btn.className = 'materia-btn';
+                btn.textContent = materia;
+                btn.onclick = () => document.getElementById('editContent').value = materia;
+                grid.appendChild(btn);
+            });
+        }
+
+        function updateCellDisplay(day, index) {
+            const col = document.getElementById(`col-${day}`);
+            const slots = col.getElementsByClassName('content-col');
+            if (slots[index]) {
+                const content = plannerData[day][index];
+                const type = typeData[day][index];
+                
+                slots[index].innerHTML = '';
+                if (content) {
+                    const div = document.createElement('div');
+                    div.className = type;
+                    div.textContent = content;
+                    slots[index].appendChild(div);
+                }
+            }
+        }
+
+        function editTime(day, index) {
+            currentDay = day;
+            currentIndex = index;
+            isEditingTime = true;
+            
+            // Buscar o horário atual da coluna
+            const col = document.getElementById(`col-${day}`);
+            const timeCols = col.getElementsByClassName('time-col');
+            const currentTime = timeCols[index].textContent;
+            
+            document.getElementById('editTime').value = currentTime;
+            document.getElementById('modalTitle').textContent = 'editar horário';
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function editContent(day, index) {
+            currentDay = day;
+            currentIndex = index;
+            isEditingTime = false;
+            
+            document.getElementById('editContent').value = plannerData[day][index] || '';
+            document.getElementById('modalTitle').textContent = 'editar atividade';
+            
+            // Marcar o tipo atual
+            const currentType = typeData[day][index];
+            const radios = document.getElementsByName('tipo');
+            for (let radio of radios) {
+                if (radio.value === currentType) {
+                    radio.checked = true;
+                    break;
+                }
+            }
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveEdit() {
+            if (isEditingTime) {
+                // Salvar horário
+                const newTime = document.getElementById('editTime').value;
+                const col = document.getElementById(`col-${currentDay}`);
+                const timeCols = col.getElementsByClassName('time-col');
+                timeCols[currentIndex].textContent = newTime;
+            } else {
+                // Salvar conteúdo e tipo
+                const content = document.getElementById('editContent').value;
+                const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'obrigatoria';
+                
+                plannerData[currentDay][currentIndex] = content;
+                typeData[currentDay][currentIndex] = tipo;
+                updateCellDisplay(currentDay, currentIndex);
+            }
+            
+            closeModal();
+        }
+
+        function addTimeSlot(day) {
+            const col = document.getElementById(`col-${day}`);
+            const slots = col.getElementsByClassName('time-slot');
+            const newIndex = slots.length;
+            
+            // Criar novo slot
+            const newSlot = document.createElement('div');
+            newSlot.className = 'time-slot';
+            newSlot.innerHTML = `
+                <div class="time-col" onclick="editTime('${day}', ${newIndex})">Novo</div>
+                <div class="content-col" onclick="editContent('${day}', ${newIndex})"></div>
+            `;
+            
+            // Inserir antes do botão
+            const button = col.getElementsByClassName('btn-add-time')[0];
+            col.insertBefore(newSlot, button);
+            
+            // Atualizar arrays
+            plannerData[day].push('');
+            typeData[day].push('obrigatoria');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const btn = document.querySelector('.btn-darkmode span');
+            btn.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌓';
+        }
+
+        function downloadPlanner() {
+            const printWindow = window.open('', '_blank');
+            
+            let html = `
+                <html>
+                <head>
+                    <title>Planner Semanal 2026</title>
+                    <style>
+                        body { font-family: 'Inter', Arial, sans-serif; padding: 2rem; }
+                        h1 { color: #0a2d4e; border-left: 6px solid #4f8bc9; padding-left: 1.5rem; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+                        th { background: #e1efff; padding: 1rem; border: 1px solid #c5d9f5; }
+                        td { border: 1px solid #d7e6ff; padding: 0.5rem; vertical-align: top; }
+                        .time { font-weight: bold; color: #144d7a; }
+                    </style>
+                </head>
+                <body>
+                    <h1>PLANNER SEMANAL · CURSINHO 2026</h1>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SEGUNDA</th>
+                                <th>TERÇA</th>
+                                <th>QUARTA</th>
+                                <th>QUINTA</th>
+                                <th>SEXTA</th>
+                                <th>SÁBADO</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Encontrar o maior número de slots
+            const maxSlots = Math.max(
+                document.getElementById('col-segunda').getElementsByClassName('time-slot').length,
+                document.getElementById('col-terca').getElementsByClassName('time-slot').length,
+                document.getElementById('col-quarta').getElementsByClassName('time-slot').length,
+                document.getElementById('col-quinta').getElementsByClassName('time-slot').length,
+                document.getElementById('col-sexta').getElementsByClassName('time-slot').length,
+                document.getElementById('col-sabado').getElementsByClassName('time-slot').length
+            );
+
+            for (let i = 0; i < maxSlots - 1; i++) { // -1 para ignorar o botão
+                html += '<tr>';
+                const days = ['segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+                days.forEach(day => {
+                    const col = document.getElementById(`col-${day}`);
+                    const slots = col.getElementsByClassName('time-slot');
+                    if (i < slots.length) {
+                        const timeCol = slots[i].getElementsByClassName('time-col')[0].textContent;
+                        const content = plannerData[day][i] || '';
+                        html += `<td><span class="time">${timeCol}</span><br>${content}</td>`;
+                    } else {
+                        html += '<td></td>';
+                    }
+                });
+                html += '</tr>';
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
+        // Inicializar
+        renderMateriasGrid();
+        loadFromLocalStorage(); // Carregar dados salvos
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        };
+    </script>
+</body>
+</html>
